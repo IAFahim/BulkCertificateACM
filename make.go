@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/atotto/clipboard"
 	"github.com/fogleman/gg"
 	"image"
 	"image/color"
@@ -12,10 +11,7 @@ import (
 )
 
 func main() {
-	changed := clipboard.WriteAll("gsdwee")
-	println(changed)
-
-	//readData()
+	readData()
 }
 
 func main_fuc() {
@@ -50,7 +46,7 @@ func readData() {
 	w, _ := os.Create("test.csv")
 	defer w.Close()
 	n := len(d[0])
-	arr := make([]int, n)
+	arr, data := make([]int, n), make([]string, n)
 	for i := 0; i < n; i++ {
 		if d[0][i][0] == '*' {
 			d[0][i] = d[0][i][1:]
@@ -76,25 +72,27 @@ func readData() {
 						st = *at
 					}
 					sm[st]++
-					str := fmt.Sprintf(st, sm[st])
-					printCSV(&x, &n, w, &str)
+					data[x] = fmt.Sprintf(st, sm[st])
 					continue
 				} else if c == 0 && y > 1 {
 					at = &d[arr[x]][x]
 				} else {
 					arr[x] = y
 				}
-				printCSV(&x, &n, w, at)
+				data[x] = *at
 			}
+			printCSVArray(w, data)
 		}
 	}
 }
 
-func printCSV(i, size *int, w *os.File, str *string) {
-	if *i+1 == *size {
-		w.WriteString(*str + "\n")
-	} else {
-		w.WriteString(*str + ",")
+func printCSVArray(w *os.File, str []string) {
+	n := len(str)
+	for i := 0; i < n-1; i++ {
+		w.WriteString(str[i] + ",")
+	}
+	if n > 0 {
+		w.WriteString(str[n-1] + "\n")
 	}
 }
 
