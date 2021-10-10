@@ -25,53 +25,54 @@ func readData() {
 	}
 	r := csv.NewReader(f)
 	d, _ := r.ReadAll()
-	s, k := -1, -1
-	for i := 0; i < len(d); i++ {
+	sCount, k := -1, -1
+	w, _ := os.Create("test.csv")
+	defer w.Close()
+	n := len(d[0])
+	arr := make([]int, n)
+	for i := 0; i < n; i++ {
 		if d[0][i][0] == '*' {
 			d[0][i] = d[0][i][1:]
-			s = i
+			sCount = i
 		} else if d[0][i][0] == '?' {
 			d[0][i] = d[0][i][1:]
 			k = i
 		}
-		println(d[0][i])
+		printCSV(&i, &n, w, &d[0][i])
 	}
-	st, i := "", 1
-	w, _ := os.Create("test.csv")
-	defer w.Close()
+	st, sm := "", make(map[string]int)
 	if len(d) < 2 {
 		panic("too small like something something")
 	}
 	for y := 1; y < len(d); y++ {
 		if k != -1 && len(d[y][k]) > 0 {
-			for x := 0; x < len(d[y]); x++ {
-				if x == s {
-					if len(d[y][x]) > 0 {
-						st = d[y][x]
-						i = 1
+			for x := 0; x < n; x++ {
+				var at *string
+				at = &d[y][x]
+				c := len(*at)
+				if x == sCount {
+					if c > 0 {
+						st = *at
 					}
-					w.WriteString(fmt.Sprintf(st+",", i))
-					i++
-				} else if x+1 == len(d[y]) {
-					if len(d[y][x]) == 0 && y > 1 {
-						d[y][x] = d[y-1][x]
-					}
-					w.WriteString(d[y][x] + "\n")
+					sm[st]++
+					str := fmt.Sprintf(st, sm[st])
+					printCSV(&x, &n, w, &str)
+					continue
+				} else if c == 0 && y > 1 {
+					at = &d[arr[x]][x]
 				} else {
-					if len(d[y][x]) == 0 && y > 1 {
-						d[y][x] = d[y-1][x]
-					}
-					w.WriteString(d[y][x] + ",")
+					arr[x] = y
 				}
-			}
-		} else {
-			for x := 0; x < len(d[y]); x++ {
-				if x+1 == len(d[y]) {
-					w.WriteString(d[y][x] + "\n")
-				} else {
-					w.WriteString(d[y][x] + ",")
-				}
+				printCSV(&x, &n, w, at)
 			}
 		}
+	}
+}
+
+func printCSV(i, size *int, w *os.File, str *string) {
+	if *i+1 == *size {
+		w.WriteString(*str + "\n")
+	} else {
+		w.WriteString(*str + ",")
 	}
 }
