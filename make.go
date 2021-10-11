@@ -55,8 +55,8 @@ func readData() {
 			d[0][i] = d[0][i][1:]
 			k = i
 		}
-		printCSV(&i, &n, w, &d[0][i])
 	}
+	printCSVArray(w, d[0])
 	st, sm := "", make(map[string]int)
 	if len(d) < 2 {
 		panic("too small like something something")
